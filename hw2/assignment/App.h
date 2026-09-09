@@ -2,7 +2,7 @@
 #define SRC_APP_H_
 
 void Scale(const unsigned char * Input, unsigned char * Output);
-void Filter(const unsigned char * Input, unsigned char * Output);
+void Filter(const unsigned char *Input, unsigned char *Output, double *horizontal_time, double *vertical_time);
 void Differentiate(const unsigned char * Input, unsigned char * Output);
 int Compress(const unsigned char * Input, unsigned char * Output);
 void Filter_vertical(const unsigned char * Input, unsigned char * Output);
