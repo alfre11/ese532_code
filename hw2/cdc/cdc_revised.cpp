@@ -4,35 +4,11 @@
 #include <math.h>
 #include <string>
 #include <iostream>
-#include "stopwatch.h"
 
 #define WIN_SIZE 16
 #define PRIME 3
 #define MODULUS 256
 #define TARGET 0
-
-uint64_t hash_func(unsigned char *input, unsigned int pos)
-{
-	uint64_t hash = 0;
-	uint64_t current_pow = PRIME;
-
-	for (int i = 0; i < WIN_SIZE; ++i) {
-		hash += (input[pos+WIN_SIZE-1-i]) * current_pow;
-
-		current_pow = current_pow * PRIME;
-	}
-	return hash;
-}
-
-void cdc(unsigned char *buff, unsigned int buff_size)
-{
-	for (unsigned int i = WIN_SIZE; i < buff_size - WIN_SIZE; ++i) {
-		if (((hash_func(buff, i) % MODULUS)) == TARGET){
-			printf("%u\n", i);
-		}
-	}
-
-}
 
 uint64_t initial_hash(unsigned char *input, unsigned int pos)
 {
@@ -47,7 +23,7 @@ uint64_t initial_hash(unsigned char *input, unsigned int pos)
 	return hash;
 }
 
-uint64_t hash_func_revised(unsigned char *input, unsigned int pos, uint64_t previous_hash)
+uint64_t hash_func(unsigned char *input, unsigned int pos, uint64_t previous_hash)
 {
 	uint64_t current_pow = std::pow(PRIME, WIN_SIZE+1);
 
@@ -55,7 +31,7 @@ uint64_t hash_func_revised(unsigned char *input, unsigned int pos, uint64_t prev
 	return hash;
 }
 
-void cdc_revised(unsigned char *buff, unsigned int buff_size)
+void cdc(unsigned char *buff, unsigned int buff_size)
 {
 	uint64_t prev_hash = initial_hash(buff, WIN_SIZE);
 	if (((prev_hash % MODULUS)) == TARGET){
@@ -63,7 +39,7 @@ void cdc_revised(unsigned char *buff, unsigned int buff_size)
 	}
 
 	for (unsigned int i = WIN_SIZE+1; i < buff_size - WIN_SIZE; ++i) {
-		uint64_t curr_hash = hash_func_revised(buff, i-1, prev_hash);
+		uint64_t curr_hash = hash_func(buff, i-1, prev_hash);
 		if (((curr_hash % MODULUS)) == TARGET){
 			printf("%u\n", i);
 		}
@@ -94,28 +70,7 @@ void test_cdc( const char* file )
 
 	int bytes_read = fread(&buff[0],sizeof(unsigned char),file_size,fp);
 
-	stopwatch original_time;
-	stopwatch revised_time;
-
-	original_time.start();
 	cdc(buff, file_size);
-	original_time.stop();
-
-	revised_time.start();
-	cdc_revised(buff, file_size);
-	revised_time.stop();
-
-	printf("---------------------------------------------\n");
-    printf("Original CDC latency:  %.2f ns\n",
-           original_time.latency());
-    printf("Revised CDC latency: %.2f ns\n",
-           revised_time.latency());
-
-    printf("Speedup: %.2fx\n",
-           original_time.latency() /
-           revised_time.latency());
-
-    printf("---------------------------------------------\n");
 
     free(buff);
     return;
